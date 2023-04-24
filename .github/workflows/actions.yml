@@ -30,7 +30,7 @@ jobs:
         env:
           CI: true
       - name: Vitest Coverage Report
-        uses: davelosert/vitest-coverage-report-action@v1.3.2
+        uses: davelosert/vitest-coverage-report-action@v1.4.0
         with:
           vite-config-path: './vite.config.ts'
 
