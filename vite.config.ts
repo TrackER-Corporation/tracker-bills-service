@@ -12,7 +12,7 @@ export default defineConfig({
       functions: 75,
       statements: 75,
       include: ["**/*.ts"],
-      exclude: ["**/types/*.ts", "**/test/*.ts", "vite-env.d.ts", "vite.config.ts", "**/db/**/*.ts"],
+      exclude: ["**/types/*.ts", "**/test/*.ts", "vite-env.d.ts", "vite.config.ts"],
       reporter: ['text', 'json-summary', 'json'],
     },
   },
