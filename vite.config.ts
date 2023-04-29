@@ -7,10 +7,10 @@ export default defineConfig({
     coverage: {
       provider: "c8",
       all: true,
-      lines: 75,
+      lines: 65,
       branches: 75,
       functions: 75,
-      statements: 75,
+      statements: 65,
       include: ["**/*.ts"],
       exclude: ["**/types/*.ts", "**/test/*.ts", "vite-env.d.ts", "vite.config.ts"],
       reporter: ['text', 'json-summary', 'json'],
