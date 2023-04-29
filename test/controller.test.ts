@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { addData, updateData, getBills, getBillsByOrganizationId, getBuildingBills, getBillsRenewableOnly, getBillsByOrganizationIdAggregated, getBillsAggregatedFiltered } from "../db/controller/controller";
 import { ObjectId } from "mongodb";
 import { collections, connectToDatabase } from "../db/services/database.service";
@@ -66,10 +66,10 @@ describe('Activity controller', async () => {
             body: {
                 buildingId: new ObjectId("111111111111"),
                 organizationId: new ObjectId("111111111111"),
-                electric: 9, 
-                gas: 9, 
-                water: 9, 
-                resources: [{ Solar: 99 }, { Wind: 99 }, { Geo: 99 }, { Hydro: 99 }], 
+                electric: 10, 
+                gas: 10, 
+                water: 10, 
+                resources: [{ Solar: 100 }, { Wind: 100 }, { Geo: 100 }, { Hydro: 100 }], 
                 date: Date.now()
             },
             params: {
@@ -96,9 +96,9 @@ describe('Activity controller', async () => {
         const req = {
             body: {
                 buildingId: new ObjectId("111111111111"),
-                electric: 10, 
-                gas: 10, 
-                water: 10, 
+                electric: 100, 
+                gas: 100, 
+                water: 100, 
                 resources: [{ Solar: 99 }, { Wind: 99 }, { Geo: 99 }, { Hydro: 99 }], 
                 date: Date.now()
             },

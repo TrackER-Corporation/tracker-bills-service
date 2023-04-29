@@ -33,9 +33,8 @@ export const addData = asyncHandler(async (req, res) => {
     if (bills) {
       res.status(200).json(bills)
     }
-  }else{
+  } else {
     res.status(401)
-    return
   }
 })
 
@@ -59,14 +58,14 @@ export const updateData = asyncHandler(async (req, res) => {
           }
         }
       })
-      if (bills) {
-        res.status(200).json(bills)
-      }
+    if (bills) {
+      res.status(200).json(bills)
+    }
   }
 })
 
 export const getBills = asyncHandler(async (req, res) => {
-  const bills = await collections.bills!.find({}).toArray();
+  const bills = await collections?.bills?.find({}).toArray();
   res.status(200).json(bills)
 })
 
@@ -75,7 +74,7 @@ export const getBuildingBills = asyncHandler(async (req, res) => {
     res.status(400)
     return
   }
-  const goal = await collections.bills!.findOne({ buildingId: new ObjectId(req.params.id) })
+  const goal = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
   if (!goal) {
     res.status(404)
   } else {
@@ -155,7 +154,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
             return el._id.toString()
           })
           const res2 = bills?.filter((r: any) => tmpRes.includes(r.buildingId.toString()))
-          await Promise.all(res2!.map(async el => {
+          await Promise.all(res2!.map(async (el: any) => {
             let obj = orgIds.find((o: any) => o.id.toString() === el.buildingId.toString());
             get(`http://localhost:3000/api/organization/${obj.organizationId}`, (res) => {
               let rawData = '';
