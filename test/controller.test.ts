@@ -25,10 +25,6 @@ describe('Activity controller', async () => {
         return res;
     };
 
-    beforeAll(() => {
-        vi.clearAllMocks();
-    });
-
     it('should return error adding bills with no building id', async () => {
         const req = {
             params: {
@@ -78,7 +74,7 @@ describe('Activity controller', async () => {
         };
         const res = mockResponse();
         await addData(req, res);
-        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.status).toHaveBeenCalledWith(400);
     });
 
     it('should return error updating bills with no building id', async () => {
@@ -236,7 +232,7 @@ describe('Activity controller', async () => {
         };
         const res = mockResponse();
         await getBillsByOrganizationIdAggregated(req, res);
-        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.status).toHaveBeenCalledWith(400);
     });
 
     it('should be called 0 times for gateway offline', async () => {
@@ -247,7 +243,7 @@ describe('Activity controller', async () => {
         };
         const res = mockResponse();
         await getBillsByOrganizationIdAggregated(req, res);
-        expect(res.status).toHaveBeenCalledTimes(0)
+        expect(res.status).toHaveBeenCalledTimes(1)
     });
 
     it('should return error getting bills aggregated with no organization id', async () => {
