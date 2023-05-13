@@ -167,11 +167,12 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
 
   const buildings = await buildingsFetch.json()
   if (buildings) {
-    let orgIds: Array<any> = []
-    let buildingsIds = buildings.map((building: any) => {
+    const orgIds: Array<any> = []
+    const buildingsIds = buildings.map((building: any) => {
       orgIds.push({ id: building._id, organizationId: building.organizationId })
       return building._id.toString()
     })
+
     const buildingsBills = bills?.filter((bill: any) => buildingsIds.includes(bill.buildingId.toString()))
     if (!buildingsBills) {
       throw Error('Error')
@@ -189,6 +190,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
         buildingBills.bills.map((bill: any) => {
           if (hasCountedDay(allDay, bill.date))
             days++
+          console.log(aggregated)
           if (aggregated.hasOwnProperty(bill.date)) {
             if (bill.date !== null) {
               let existing = aggregated.get(bill.date);
@@ -225,7 +227,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
       invoicesDays: days
     }
   }
-  result.json({ data, electric, gas, water, days })
+  result.json(data)
 })
 
 export const getBillsByOrganizationIdAggregated = asyncHandler(async (req, res) => {
