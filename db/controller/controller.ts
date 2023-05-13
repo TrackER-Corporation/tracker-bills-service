@@ -110,7 +110,7 @@ export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
     { $unwind: "$bills.resources" },
     {
       $match: {
-        buildingId: new ObjectId("6315ebc67d1e15078e3b4b22")
+        buildingId: new ObjectId(req.params.id)
       }
     },
     {
