@@ -12,8 +12,7 @@ const hasCountedDay = function (allDay: any, date: any) {
 
 export const addData = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    res.status(400)
-    return
+    throw Error('Error')
   }
   const exist = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
   if (!exist) {
@@ -34,14 +33,14 @@ export const addData = asyncHandler(async (req, res) => {
       res.status(200).json(bills)
     }
   } else {
-    res.status(400)
+    throw Error('Error')
   }
 })
 
 export const updateData = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    res.status(400)
-    return
+
+    throw Error('Error')
   }
   const exist = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
   if (exist) {
@@ -65,31 +64,30 @@ export const updateData = asyncHandler(async (req, res) => {
 })
 
 export const getBills = asyncHandler(async (req, res) => {
-  const bills = await collections?.bills?.find({}).toArray();
+  const bills = await collections.bills?.find({}).toArray();
+  if (!bills) throw Error('Error')
   res.status(200).json(bills)
 })
 
 export const getBuildingBills = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    res.status(400)
-    return
+    throw Error('Error')
   }
   const goal = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
-  if (!goal) {
-    res.status(404)
-  } else {
-    res.status(200).json(goal);
-  }
+  if (!goal)
+    throw Error('Error')
+  res.status(200).json(goal);
 })
 
 export const getBillsByOrganizationId = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    res.status(400)
-    return
+
+    throw Error('Error')
   }
   const bills = await collections?.bills?.find({ organizationId: new ObjectId(req.params.id) }).toArray();
   if (bills?.length === 0) {
-    res.status(401)
+
+    throw Error('Error')
   } else {
     res.status(200).json(bills);
   }
@@ -97,36 +95,30 @@ export const getBillsByOrganizationId = asyncHandler(async (req, res) => {
 
 export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    res.status(400);
-    return;
+    throw Error('Error')
   }
 
   const bills = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) });
   if (!bills) {
-    res.status(401).json({ renewable: [], totalSolar: 0, totalWind: 0, totalGeo: 0, totalHydro: 0 });
-    return;
+    throw Error('Error');
   }
-
   let totalSolar = 0, totalWind = 0, totalGeo = 0, totalHydro = 0;
   const renewable = Object.values(bills.bills)
     .map((el: any) => {
-      if (el.resources.length === 0) {
-        return null;
-      }
-
-      el.resources.forEach((ele: any) => {
-        const value = parseFloat(Object.values(ele).toString());
-        if (Object.keys(ele).includes("Solar")) {
-          totalSolar += value;
-        } else if (Object.keys(ele).includes("Wind")) {
-          totalWind += value;
-        } else if (Object.keys(ele).includes("Geo")) {
-          totalGeo += value;
-        } else if (Object.keys(ele).includes("Hydro")) {
-          totalHydro += value;
-        }
-      });
-
+      if (!el.resources || el.resources.length === 0) { }
+      else
+        el.resources.forEach((ele: any) => {
+          const value = parseFloat(Object.values(ele).toString());
+          if (Object.keys(ele).includes("Solar")) {
+            totalSolar += value;
+          } else if (Object.keys(ele).includes("Wind")) {
+            totalWind += value;
+          } else if (Object.keys(ele).includes("Geo")) {
+            totalGeo += value;
+          } else if (Object.keys(ele).includes("Hydro")) {
+            totalHydro += value;
+          }
+        });
       return { date: el.date, resources: el.resources };
     })
     .filter((el) => el !== null);
@@ -144,7 +136,7 @@ export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
 export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
   if (!req.params.id) {
     result.status(400)
-    return
+    throw Error('Error')
   }
 
   const bills = await collections?.bills?.find({}).toArray()
@@ -236,20 +228,20 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
 export const getBillsByOrganizationIdAggregated = asyncHandler(async (req, res) => {
   const id = req.params.id;
   if (!id) {
-    res.status(400)
-    return;
+
+    throw Error('Error');
   }
 
   const bills = await collections?.bills?.find({ organizationId: new ObjectId(id) }).toArray();
   if (!bills || bills.length === 0) {
-    res.status(400)
-    return;
+
+    throw Error('Error');
   }
 
   const organization = await fetchOrganization(id);
   if (!organization) {
-    res.status(400)
-    return;
+
+    throw Error('Error');
   }
 
   const { electric, gas, water } = computeTotals(bills, organization);
@@ -269,9 +261,8 @@ async function fetchOrganization(id: string) {
   try {
     const response = await fetch(`http://localhost:3000/api/organization/${id}`);
     return await response.json();
-  } catch (e) {
-    console.error(e);
-    return null;
+  } catch {
+    throw Error('Error')
   }
 }
 
