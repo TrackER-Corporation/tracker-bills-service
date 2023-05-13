@@ -146,85 +146,92 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
     result.status(400)
     return
   }
-  const bills = await collections?.bills?.find({}).toArray();
+
+  const bills = await collections?.bills?.find({}).toArray()
+  const test = collections.bills?.aggregate([
+    { $unwind: "$bills" },
+    {
+      $match: {
+        buildingId: new ObjectId("62ed1f97d158cb42b69e5356")
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        totalElectric: { $sum: "$bills.electric" },
+        totalWater: { $sum: "$bills.water" },
+        totalGas: { $sum: "$bills.gas" }
+      }
+    }
+  ])
+  //console.log(await test?.next())
+  //result.status(200).json(test?.next())
+
   let days = 0
   let data = {}
   let electric = 0
   let gas = 0
   let water = 0
   let allDay: any = []
-  get(`http://localhost:3000/api/buildings/find/${req.params.id}`, async (res) => {
-    let rawData = '';
-    res.on('data', (chunk) => { rawData += chunk; });
-    res.on('end', async () => {
-      try {
-        const goal = JSON.parse(rawData);
-        if (goal) {
-          let orgIds: any = []
-          let aggregated = new Map<any, any>()
-          let tmpRes = goal.map((el: any) => {
-            orgIds.push({ id: el._id, organizationId: el.organizationId })
-            return el._id.toString()
-          })
-          const res2 = bills?.filter((r: any) => tmpRes.includes(r.buildingId.toString()))
-          if (!res2) {
-            result.status(400)
-            return
+  let aggregated: any = {}
+
+  const buildingsFetch = await fetch(`http://localhost:3000/api/buildings/user/${req.params.id}`)
+  const buildings = await buildingsFetch.json()
+  if (buildings) {
+    let orgIds: Array<any> = []
+    let buildingsIds = buildings.map((building: any) => {
+      orgIds.push({ id: building._id, organizationId: building.organizationId })
+      return building._id.toString()
+    })
+    const buildingsBills = bills?.filter((bill: any) => buildingsIds.includes(bill.buildingId.toString()))
+    if (!buildingsBills) {
+      result.status(400)
+      return
+    }
+    await Promise.all(buildingsBills.map(async buildingBills => {
+      const org = orgIds.find(org => org.id.toString() === buildingBills.buildingId.toString());
+      const organizationFetch = await fetch(`http://localhost:3000/api/organization/${org.organizationId}`)
+      const organization = await organizationFetch.json()
+      if (organization) {
+        buildingBills.bills.map((bill: any) => {
+          if (hasCountedDay(allDay, bill.date))
+            days++
+          if (aggregated.hasOwnProperty(bill.date)) {
+            let existing = aggregated.get(bill.date);
+            aggregated[bill.date] = {
+              date: new Date(existing.date),
+              ...(organization.type.includes("Electric")) && { electric: parseFloat(existing.electric + bill.electric).toFixed(2) },
+              ...(organization.type.includes("Gas")) && { gas: parseFloat(existing.gas + bill.gas).toFixed(2) },
+              ...(organization.type.includes("Water")) && { water: parseFloat(isNaN(existing.water) ? 0 + bill.water : existing.water + bill.water).toFixed(2) },
+            }
+          } else {
+            aggregated[bill.date] = {
+              date: new Date(bill.date),
+              ...(organization.type.includes("Electric")) && { electric: parseFloat(bill.electric).toFixed(2) },
+              ...(organization.type.includes("Gas")) && { gas: parseFloat(bill.gas).toFixed(2) },
+              ...(organization.type.includes("Water")) && { water: parseFloat(bill.water).toFixed(2) },
+            }
           }
-          await Promise.all(res2.map(async (el: any) => {
-            let obj = orgIds.find((o: any) => o.id.toString() === el.buildingId.toString());
-            get(`http://localhost:3000/api/organization/${obj.organizationId}`, (res) => {
-              let rawData = '';
-              res.on('data', (chunk) => { rawData += chunk; });
-              res.on('end', () => {
-                try {
-                  const goal2 = JSON.parse(rawData);
-                  if (goal2)
-                    el.bills.map((bill: any) => {
-                      if (hasCountedDay(allDay, bill.date))
-                        days++
-                      if (aggregated.has(bill.date)) {
-                        let existing = aggregated.get(bill.date);
-                        aggregated.set(bill.date, {
-                          date: existing.date,
-                          ...(goal2.type.includes("Electric")) && { electric: parseFloat(existing.electric + bill.electric).toFixed(2) },
-                          ...(goal2.type.includes("Gas")) && { gas: parseFloat(existing.gas + bill.gas).toFixed(2) },
-                          ...(goal2.type.includes("Water")) && { water: parseFloat(isNaN(existing.water) ? 0 + bill.water : existing.water + bill.water).toFixed(2) },
-                        })
-                      } else {
-                        aggregated.set(bill.date, {
-                          date: bill.date,
-                          ...(goal2.type.includes("Electric")) && { electric: parseFloat(bill.electric).toFixed(2) },
-                          ...(goal2.type.includes("Gas")) && { gas: parseFloat(bill.gas).toFixed(2) },
-                          ...(goal2.type.includes("Water")) && { water: parseFloat(bill.water).toFixed(2) },
-                        })
-                      }
-                      if (goal2.type.includes("Electric"))
-                        electric += bill.electric
-                      if (goal2.type.includes("Gas"))
-                        gas += bill.gas
-                      if (goal2.type.includes("Water"))
-                        water += bill.water
-                    })
-                } catch (e: any) {
-                  console.error(e.message);
-                }
-              });
-            }).on('error', (e) => {
-              console.error(`Got an error: ${e}`);
-            });
-          }))
-          data = Array.from(aggregated.values())
-        }
-        result.json({ data, electric, gas, water, days })
-      } catch (e: any) {
-        console.error(e.message);
+          if (organization.type.includes("Electric"))
+            electric += bill.electric
+          if (organization.type.includes("Gas"))
+            gas += bill.gas
+          if (organization.type.includes("Water"))
+            water += bill.water
+        })
       }
-    });
-  }).on('error', (e) => {
-    console.error(`Got an error: ${e}`);
-  });
-});
+    }))
+    data = {
+      totalElectric: parseFloat(electric.toFixed(2)),
+      totalGas: parseFloat(gas.toFixed(2)),
+      totalWater: parseFloat(water.toFixed(2)),
+      aggregated: aggregated,
+      all: buildingsBills,
+      invoicesDays: days
+    }
+  }
+  result.json({ data, electric, gas, water, days })
+})
 
 export const getBillsByOrganizationIdAggregated = asyncHandler(async (req, res) => {
   const id = req.params.id;
