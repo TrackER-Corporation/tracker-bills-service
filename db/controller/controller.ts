@@ -124,7 +124,6 @@ export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
     }
   ])
   const sumRenewables = await sumRenewablesFetch?.next()
-  console.log(sumRenewables?.totalHydro)
   
   const renewable = Object.values(bills.bills)
     .map((el: any) => {
