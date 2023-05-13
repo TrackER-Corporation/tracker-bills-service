@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import { ObjectId } from 'mongodb';
 import { collections } from '../services/database.service';
-import { get } from 'http';
+import { error } from 'console';
 
 const hasCountedDay = function (allDay: any, date: any) {
   if (allDay.includes(new Date(date).getDate()))
@@ -39,7 +39,6 @@ export const addData = asyncHandler(async (req, res) => {
 
 export const updateData = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-
     throw Error('Error')
   }
   const exist = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
@@ -60,6 +59,8 @@ export const updateData = asyncHandler(async (req, res) => {
     if (bills) {
       res.status(200).json(bills)
     }
+  }else{
+    throw error("Error")
   }
 })
 
@@ -102,62 +103,52 @@ export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
   if (!bills) {
     throw Error('Error');
   }
-  let totalSolar = 0, totalWind = 0, totalGeo = 0, totalHydro = 0;
+
+  const sumRenewablesFetch = collections.bills?.aggregate
+  ([
+    { $unwind: "$bills" },
+    { $unwind: "$bills.resources" },
+    {
+      $match: {
+        buildingId: new ObjectId("6315ebc67d1e15078e3b4b22")
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        totalSolar: { $sum: "$bills.resources.Solar" },
+        totalWind: { $sum: "$bills.resources.Wind" },
+        totalGeo: { $sum: "$bills.resources.Geo" },
+        totalHydro: { $sum: "$bills.resources.Hydro" }
+      }
+    }
+  ])
+  const sumRenewables = await sumRenewablesFetch?.next()
+  console.log(sumRenewables?.totalHydro)
+  
   const renewable = Object.values(bills.bills)
     .map((el: any) => {
       if (!el.resources || el.resources.length === 0) { }
-      else
-        el.resources.forEach((ele: any) => {
-          const value = parseFloat(Object.values(ele).toString());
-          if (Object.keys(ele).includes("Solar")) {
-            totalSolar += value;
-          } else if (Object.keys(ele).includes("Wind")) {
-            totalWind += value;
-          } else if (Object.keys(ele).includes("Geo")) {
-            totalGeo += value;
-          } else if (Object.keys(ele).includes("Hydro")) {
-            totalHydro += value;
-          }
-        });
       return { date: el.date, resources: el.resources };
     })
     .filter((el) => el !== null);
 
   res.status(200).json({
     renewable,
-    totalSolar: Number(totalSolar.toFixed(2)),
-    totalWind: Number(totalWind.toFixed(2)),
-    totalGeo: Number(totalGeo.toFixed(2)),
-    totalHydro: Number(totalHydro.toFixed(2)),
+    totalSolar: Number(sumRenewables?.totalSolar.toFixed(2)),
+    totalWind: Number(sumRenewables?.totalWind.toFixed(2)),
+    totalGeo: Number(sumRenewables?.totalGeo.toFixed(2)),
+    totalHydro: Number(sumRenewables?.totalHydro.toFixed(2)),
   });
 });
 
 
 export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
   if (!req.params.id) {
-    result.status(400)
     throw Error('Error')
   }
 
   const bills = await collections?.bills?.find({}).toArray()
-  const test = collections.bills?.aggregate([
-    { $unwind: "$bills" },
-    {
-      $match: {
-        buildingId: new ObjectId("62ed1f97d158cb42b69e5356")
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        totalElectric: { $sum: "$bills.electric" },
-        totalWater: { $sum: "$bills.water" },
-        totalGas: { $sum: "$bills.gas" }
-      }
-    }
-  ])
-  //console.log(await test?.next())
-  //result.status(200).json(test?.next())
 
   let days = 0
   let data = {}
@@ -177,8 +168,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
     })
     const buildingsBills = bills?.filter((bill: any) => buildingsIds.includes(bill.buildingId.toString()))
     if (!buildingsBills) {
-      result.status(400)
-      return
+      throw Error('Error')
     }
     await Promise.all(buildingsBills.map(async buildingBills => {
       const org = orgIds.find(org => org.id.toString() === buildingBills.buildingId.toString());
