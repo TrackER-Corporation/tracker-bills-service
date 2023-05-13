@@ -60,7 +60,7 @@ export const updateData = asyncHandler(async (req, res) => {
       res.status(200).json(bills)
     }
   }else{
-    throw error("Error")
+    throw Error("Error")
   }
 })
 
@@ -157,7 +157,14 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
   let allDay: any = []
   let aggregated: any = {}
 
-  const buildingsFetch = await fetch(`http://localhost:3000/api/buildings/user/${req.params.id}`)
+  let buildingsFetch
+
+  try {
+    buildingsFetch = await fetch(`http://localhost:3000/api/buildings/user/${req.params.id}`)
+  } catch (error) {
+    throw Error("Error")
+  }
+  
   const buildings = await buildingsFetch.json()
   if (buildings) {
     let orgIds: Array<any> = []
@@ -171,7 +178,12 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
     }
     await Promise.all(buildingsBills.map(async buildingBills => {
       const org = orgIds.find(org => org.id.toString() === buildingBills.buildingId.toString());
-      const organizationFetch = await fetch(`http://localhost:3000/api/organization/${org.organizationId}`)
+      let organizationFetch
+      try {
+        organizationFetch = await fetch(`http://localhost:3000/api/organization/${org.organizationId}`)
+      } catch (error) {
+        throw Error("Error")
+      }
       const organization = await organizationFetch.json()
       if (organization) {
         buildingBills.bills.map((bill: any) => {
