@@ -1,7 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import { ObjectId } from 'mongodb';
 import { collections } from '../services/database.service';
-import { error } from 'console';
 
 const hasCountedDay = function (allDay: any, date: any) {
   if (allDay.includes(new Date(date).getDate()))
@@ -155,7 +154,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
   let gas = 0
   let water = 0
   let allDay: any = []
-  let aggregated: any = {}
+  const aggregated: any = {}
 
   let buildingsFetch
 
@@ -190,23 +189,25 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
         buildingBills.bills.map((bill: any) => {
           if (hasCountedDay(allDay, bill.date))
             days++
-          console.log(aggregated)
           if (aggregated.hasOwnProperty(bill.date)) {
+            const existing = aggregated[bill.date];
             if (bill.date !== null) {
-              let existing = aggregated.get(bill.date);
               aggregated[bill.date] = {
-                date: new Date(existing.date),
+                date: existing.date,
                 ...(organization.type.includes("Electric")) && { electric: parseFloat(existing.electric + bill.electric).toFixed(2) },
                 ...(organization.type.includes("Gas")) && { gas: parseFloat(existing.gas + bill.gas).toFixed(2) },
                 ...(organization.type.includes("Water")) && { water: parseFloat(isNaN(existing.water) ? 0 + bill.water : existing.water + bill.water).toFixed(2) },
               }
-            } else {
-              aggregated[bill.date] = {
-                date: new Date(bill.date),
-                ...(organization.type.includes("Electric")) && { electric: parseFloat(bill.electric).toFixed(2) },
-                ...(organization.type.includes("Gas")) && { gas: parseFloat(bill.gas).toFixed(2) },
-                ...(organization.type.includes("Water")) && { water: parseFloat(bill.water).toFixed(2) },
-              }
+            }
+          } else {
+            aggregated[bill.date] = {
+              date: bill.date,
+              ...(organization.type.includes("Electric")) &&
+              { electric: parseFloat(bill.electric).toFixed(2) },
+              ...(organization.type.includes("Gas")) &&
+              { gas: parseFloat(bill.gas).toFixed(2) },
+              ...(organization.type.includes("Water")) &&
+              { water: parseFloat(bill.water).toFixed(2) },
             }
           }
           if (organization.type.includes("Electric"))
@@ -222,7 +223,7 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
       totalElectric: parseFloat(electric.toFixed(2)),
       totalGas: parseFloat(gas.toFixed(2)),
       totalWater: parseFloat(water.toFixed(2)),
-      aggregated: aggregated,
+      aggregated,
       all: buildingsBills,
       invoicesDays: days
     }
