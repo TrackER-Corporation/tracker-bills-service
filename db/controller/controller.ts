@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import { ObjectId } from 'mongodb';
 import { collections } from '../services/database.service';
 
-const hasCountedDay = function (allDay: any, date: any) {
+export const hasCountedDay = function (allDay: any, date: any) {
   if (allDay.includes(new Date(date).getDate()))
     return false
   allDay.push(new Date(date).getDate())
@@ -14,7 +14,7 @@ export const addData = asyncHandler(async (req, res) => {
     throw Error('Error')
   }
   const exist = await collections?.bills?.findOne({ buildingId: new ObjectId(req.params.id) })
-  if (!exist) {
+  if (exist === null) {
     const bills = await collections?.bills?.insertOne({
       buildingId: new ObjectId(req.params.id),
       organizationId: new ObjectId(req.body.organizationId),
