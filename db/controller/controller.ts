@@ -103,31 +103,30 @@ export const getBillsRenewableOnly = asyncHandler(async (req, res) => {
     throw Error('Error');
   }
 
-  const sumRenewablesFetch = collections.bills?.aggregate
-    ([
-      { $unwind: "$bills" },
-      { $unwind: "$bills.resources" },
-      {
-        $match: {
-          buildingId: new ObjectId(req.params.id)
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalSolar: { $sum: "$bills.resources.Solar" },
-          totalWind: { $sum: "$bills.resources.Wind" },
-          totalGeo: { $sum: "$bills.resources.Geo" },
-          totalHydro: { $sum: "$bills.resources.Hydro" }
-        }
+  const sumRenewablesFetch = collections.bills?.aggregate([
+    { $unwind: "$bills" },
+    { $unwind: "$bills.resources" },
+    {
+      $match: {
+        buildingId: new ObjectId(req.params.id)
       }
-    ])
+    },
+    {
+      $group: {
+        _id: null,
+        totalSolar: { $sum: "$bills.resources.Solar" },
+        totalWind: { $sum: "$bills.resources.Wind" },
+        totalGeo: { $sum: "$bills.resources.Geo" },
+        totalHydro: { $sum: "$bills.resources.Hydro" }
+      }
+    }
+  ])
   const sumRenewables = await sumRenewablesFetch?.next()
 
   const renewable = Object.values(bills.bills)
     .map((el: any) => {
-      if (!el.resources || el.resources.length === 0) { }
-      return { date: el.date, resources: el.resources };
+      if (el.resources && el.resources.length > 0)
+        return { date: el.date, resources: el.resources };
     })
     .filter((el) => el !== null);
 

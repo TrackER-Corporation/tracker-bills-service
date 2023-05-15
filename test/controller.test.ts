@@ -204,7 +204,7 @@ describe('Bills controller', async () => {
         expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it('should return error getting bills aggregated with no organization id', async () => {
+    it('should return error getting bills aggregated and filtered with no organization id', async () => {
         const req = {
             params: {
                 id: ""
@@ -212,6 +212,7 @@ describe('Bills controller', async () => {
         };
         const res = mockResponse();
         expect(async () => await getBillsByOrganizationIdAggregated(req, res, {})).rejects.toThrow(/Error/);
+        expect(async () => await getBillsAggregatedFiltered(req, res, {})).rejects.toThrow(/Error/);
     });
 
     it('should return error getting bills aggregated with wrong organization id', async () => {
@@ -224,34 +225,15 @@ describe('Bills controller', async () => {
         expect(async () => await getBillsByOrganizationIdAggregated(req, res, {})).rejects.toThrow(/Error/);
     });
 
-    it('should be called 0 times for gateway offline', async () => {
+    it('should be return error', async () => {
         const req = {
             params: {
                 id: "111111111111"
             }
         };
         const res = mockResponse();
+        expect(async () => await getBillsAggregatedFiltered(req, res, {})).rejects.toThrow(/Error/);
         expect(async () => await getBillsByOrganizationIdAggregated(req, res, {})).rejects.toThrow(/Error/);
-    });
-
-    it('should return error getting bills aggregated with no organization id', async () => {
-        const req = {
-            params: {
-                id: ""
-            }
-        };
-        const res = mockResponse();
-        expect(async () => await getBillsAggregatedFiltered(req, res, {})).rejects.toThrow(/Error/);
-    });
-
-    it('should be called 0 times for gateway offline', async () => {
-        const req = {
-            params: {
-                id: "111111111111"
-            }
-        };
-        const res = mockResponse();
-        expect(async () => await getBillsAggregatedFiltered(req, res, {})).rejects.toThrow(/Error/);
         await collections.bills?.deleteOne({ buildingId: new ObjectId("111111111111") });
     });
 
