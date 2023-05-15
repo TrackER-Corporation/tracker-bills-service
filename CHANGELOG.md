@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.1](https://github.com/TrackER-Corporation/tracker-bills-service/compare/v1.1.0...v1.1.1) (2023-05-15)
+
+
+### Bug Fixes
+
+* generic building id ([6f28836](https://github.com/TrackER-Corporation/tracker-bills-service/commit/6f28836c5fcf27f2e137bd1a23aff755eba6a6b3))
+* missing aggregated object values ([22b5801](https://github.com/TrackER-Corporation/tracker-bills-service/commit/22b58018b06acb3210efb0b5451acc38e5194804))
+* null value check ([c3dd5cc](https://github.com/TrackER-Corporation/tracker-bills-service/commit/c3dd5ccaf0c50aa67e5c6c5dc9d979f59b7ae9d6))
+* replace return with throw error ([4c01fc0](https://github.com/TrackER-Corporation/tracker-bills-service/commit/4c01fc0984fcb98a8e105ca76a38fdec348a0563))
+* residual code ([7e09c48](https://github.com/TrackER-Corporation/tracker-bills-service/commit/7e09c489506a4db5749ed52c42b2757798364c54))
+* route aggregated filtered ([0529f12](https://github.com/TrackER-Corporation/tracker-bills-service/commit/0529f12197b4f290eeae7863585714783c7b48d4))
+* try catch for fetch ([bf58875](https://github.com/TrackER-Corporation/tracker-bills-service/commit/bf58875c4f65d4af4175ec1ccf31e305104e4e84))
+
 ## [1.1.0](https://github.com/TrackER-Corporation/tracker-bills-service/compare/v1.0.0...v1.1.0) (2023-05-02)
 
 
