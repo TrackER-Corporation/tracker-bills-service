@@ -58,9 +58,7 @@ export const updateData = asyncHandler(async (req, res) => {
     if (bills) {
       res.status(200).json(bills)
     }
-  } else {
-    throw Error("Error")
-  }
+  } else { throw Error("Error") }
 })
 
 export const getBills = asyncHandler(async (req, res) => {
@@ -233,22 +231,14 @@ export const getBillsAggregatedFiltered = asyncHandler(async (req, result) => {
 
 export const getBillsByOrganizationIdAggregated = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  if (!id) {
-
-    throw Error('Error');
-  }
+  if (!id) { throw Error('Error'); }
 
   const bills = await collections?.bills?.find({ organizationId: new ObjectId(id) }).toArray();
-  if (!bills || bills.length === 0) {
-
-    throw Error('Error');
-  }
+  if (!bills || bills.length === 0) { throw Error('Error'); }
 
   const organization = await fetchOrganization(id);
-  if (!organization) {
 
-    throw Error('Error');
-  }
+  if (!organization) { throw Error('Error'); }
 
   const { electric, gas, water } = computeTotals(bills, organization);
 
@@ -272,7 +262,7 @@ async function fetchOrganization(id: string) {
   }
 }
 
-function computeTotals(bills: any[], organization: any) {
+export function computeTotals(bills: any[], organization: any) {
   let electric = 0;
   let gas = 0;
   let water = 0;
@@ -292,7 +282,7 @@ function computeTotals(bills: any[], organization: any) {
   };
 }
 
-function computeAggregatedCosts(bills: any[], organization: any) {
+export function computeAggregatedCosts(bills: any[], organization: any) {
   const aggregated = new Map<any, any>();
 
   bills.forEach((bill) => {
