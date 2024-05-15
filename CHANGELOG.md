@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/TrackER-Corporation/tracker-bills-service/compare/v1.1.1...v1.1.2) (2024-04-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @vitejs/plugin-react to v4.0.4 ([d0e236d](https://github.com/TrackER-Corporation/tracker-bills-service/commit/d0e236de0435fc6720cd114e4af800955d974271))
+* **deps:** update dependency dotenv to v16.3.1 ([e8b6635](https://github.com/TrackER-Corporation/tracker-bills-service/commit/e8b6635a4570d3df339e57a9b938b2f4f103c1c5))
+* **deps:** update dependency uuid to v9.0.1 ([73543e5](https://github.com/TrackER-Corporation/tracker-bills-service/commit/73543e58585c8bcebcd369315493783d1ccd84c7))
+
 ## [1.1.1](https://github.com/TrackER-Corporation/tracker-bills-service/compare/v1.1.0...v1.1.1) (2023-05-15)
 
 
